@@ -34,6 +34,7 @@ class StatisticRoutes(ComponentBase):
     def show_system_health(self):
         with ConnectTo(self.intercom) as sc:
             plugin_dict = sc.get_available_analysis_plugins()
+        plugin_dict.pop('unpacker')
         return render_template('system_health.html', analysis_plugin_info=plugin_dict)
 
     def _get_stats_from_db(self):
