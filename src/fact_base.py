@@ -61,17 +61,27 @@ class FactBase:
         logging.info(f'Received signal {signum}. Shutting down {self.PROGRAM_NAME}...')
         self.run = False
 
+    def start(self):
+        pass
+
+    def _update_component_workload(self):
+        self.work_load_stat.update()
+
     def shutdown(self):
         logging.info(f'Shutting down components of {self.PROGRAM_NAME}')
         self.work_load_stat.shutdown()
 
     def main(self):
+        self.start()
         logging.info(f'Successfully started {self.PROGRAM_NAME}')
+        counter = 0
         while self.run:
-            self.work_load_stat.update()
+            self._update_component_workload()
             sleep(5)
             if self.args.testing:
                 break
+            if not (counter := counter + 1) % 12:  # only check every minute
+                self._check_memory_usage()
         self.shutdown()
 
     @staticmethod
@@ -86,3 +96,13 @@ class FactBase:
                 'Please run `alembic upgrade head` from `src` to update the schema.'
             )
             raise DbInterfaceError('Schema mismatch')
+
+    @staticmethod
+    def _check_memory_usage():
+        memory_usage = psutil.virtual_memory().percent
+        if memory_usage > 95.0:  # noqa: PLR2004
+            logging.critical(f'System memory is critically low: {memory_usage}%')
+        elif memory_usage > 80.0:  # noqa: PLR2004
+            logging.warning(f'System memory is running low: {memory_usage}%')
+        else:
+            logging.info(f'System memory usage: {memory_usage}%')
