@@ -17,7 +17,7 @@ except ImportError:
     from plugins.installer import AbstractPluginInstaller
 
 
-BINWALK_VERSION = '2.3.3'
+BINWALK_VERSION = '2.3.4'
 
 
 class BinwalkInstaller(AbstractPluginInstaller):
